@@ -11,9 +11,13 @@
 #include "../third_party/cJSON.h"
 #include <pwd.h>
 #include <glib.h>
-#include "../framework/include/framework.h"
+#include "../barista/include/barista.h"
 
 static struct Config config;
+
+static void handle_get_config(WebKitWebView *webview, const gchar *payload);
+static void handle_read_file(WebKitWebView *webview, const gchar *payload);
+static void handle_write_file(WebKitWebView *webview, const gchar *payload);
 
 static char *get_config_path() {
     const char *home = getenv("HOME");
@@ -77,65 +81,60 @@ static void send_config_to_js(WebKitWebView *webview) {
     free(json);
 }
 
-static void on_js_message(WebKitUserContentManager *manager, WebKitJavascriptResult *js_result, gpointer user_data) {
-    (void)manager;
-    WebKitWebView *webview = (WebKitWebView*)user_data;
-    JSCValue *value = webkit_javascript_result_get_js_value(js_result);
-    if (jsc_value_is_string(value)) {
-        char *msg = g_strdup(jsc_value_to_string(value));
-        cJSON *root = cJSON_Parse(msg);
-        if (root) {
-            const cJSON *action_json = cJSON_GetObjectItem(root, "action");
-            if (action_json) {
-                const char* action = action_json->valuestring;
-                if (strcmp(action, "get_config") == 0) {
-                    send_config_to_js(webview);
-                } else if (strcmp(action, "read_file") == 0) {
-                    const cJSON* file_json = cJSON_GetObjectItem(root, "file");
-                    if (file_json && cJSON_IsString(file_json)) {
-                        const char *home = getenv("HOME");
-                        if (!home) home = getpwuid(getuid())->pw_dir;
-                        char file_path[PATH_MAX];
-                        snprintf(file_path, sizeof(file_path), "%s/.config/mocha/%s", home, file_json->valuestring);
+static void handle_get_config(WebKitWebView *webview, const gchar *payload) {
+    (void)payload;
+    send_config_to_js(webview);
+}
 
-                        gchar* content = NULL;
-                        GError* error = NULL;
-                        if (g_file_get_contents(file_path, &content, NULL, &error)) {
-                            gchar* escaped = g_strescape(content, NULL);
-                            gchar* script = g_strdup_printf("window.setEditorContent(`%s`);", escaped);
-                            webkit_web_view_evaluate_javascript(webview, script, -1, NULL, NULL, NULL, NULL, NULL);
-                            g_free(escaped);
-                            g_free(script);
-                            g_free(content);
-                        } else {
-                            fprintf(stderr, "Failed to read file %s: %s\n", file_path, error->message);
-                            gchar* script = g_strdup_printf("window.setEditorContent(`/* Error loading file: %s */`);", error->message);
-                            webkit_web_view_evaluate_javascript(webview, script, -1, NULL, NULL, NULL, NULL, NULL);
-                            g_free(script);
-                            g_error_free(error);
-                        }
-                    }
-                } else if (strcmp(action, "write_file") == 0) {
-                    const cJSON* file_json = cJSON_GetObjectItem(root, "file");
-                    const cJSON* content_json = cJSON_GetObjectItem(root, "content");
-                    if (file_json && cJSON_IsString(file_json) && content_json && cJSON_IsString(content_json)) {
-                        const char *home = getenv("HOME");
-                        if (!home) home = getpwuid(getuid())->pw_dir;
-                        char file_path[PATH_MAX];
-                        snprintf(file_path, sizeof(file_path), "%s/.config/mocha/%s", home, file_json->valuestring);
+static void handle_read_file(WebKitWebView *webview, const gchar *payload) {
+    cJSON *root = cJSON_Parse(payload);
+    if (!root) return;
+    const cJSON* file_json = cJSON_GetObjectItem(root, "file");
+    if (file_json && cJSON_IsString(file_json)) {
+        const char *home = getenv("HOME");
+        if (!home) home = getpwuid(getuid())->pw_dir;
+        char file_path[PATH_MAX];
+        snprintf(file_path, sizeof(file_path), "%s/.config/mocha/%s", home, file_json->valuestring);
 
-                        GError* error = NULL;
-                        if (!g_file_set_contents(file_path, content_json->valuestring, -1, &error)) {
-                            fprintf(stderr, "Failed to write file %s: %s\n", file_path, error->message);
-                            g_error_free(error);
-                        }
-                    }
-                }
-            }
-            cJSON_Delete(root);
+        gchar* content = NULL;
+        GError* error = NULL;
+        if (g_file_get_contents(file_path, &content, NULL, &error)) {
+            gchar* escaped = g_strescape(content, NULL);
+            gchar* script = g_strdup_printf("window.setEditorContent(`%s`);", escaped);
+            webkit_web_view_evaluate_javascript(webview, script, -1, NULL, NULL, NULL, NULL, NULL);
+            g_free(escaped);
+            g_free(script);
+            g_free(content);
+        } else {
+            fprintf(stderr, "Failed to read file %s: %s\n", file_path, error->message);
+            gchar* script = g_strdup_printf("window.setEditorContent(`/* Error loading file: %s */`);", error->message);
+            webkit_web_view_evaluate_javascript(webview, script, -1, NULL, NULL, NULL, NULL, NULL);
+            g_free(script);
+            g_error_free(error);
         }
-        g_free(msg);
     }
+    cJSON_Delete(root);
+}
+
+static void handle_write_file(WebKitWebView *webview, const gchar *payload) {
+    (void)webview;
+    cJSON *root = cJSON_Parse(payload);
+    if (!root) return;
+    const cJSON* file_json = cJSON_GetObjectItem(root, "file");
+    const cJSON* content_json = cJSON_GetObjectItem(root, "content");
+    if (file_json && cJSON_IsString(file_json) && content_json && cJSON_IsString(content_json)) {
+        const char *home = getenv("HOME");
+        if (!home) home = getpwuid(getuid())->pw_dir;
+        char file_path[PATH_MAX];
+        snprintf(file_path, sizeof(file_path), "%s/.config/mocha/%s", home, file_json->valuestring);
+
+        GError* error = NULL;
+        if (!g_file_set_contents(file_path, content_json->valuestring, -1, &error)) {
+            fprintf(stderr, "Failed to write file %s: %s\n", file_path, error->message);
+            g_error_free(error);
+        }
+    }
+    cJSON_Delete(root);
 }
 
 int main(int argc, char *argv[]) {
@@ -158,9 +157,13 @@ int main(int argc, char *argv[]) {
     snprintf(html_path, sizeof(html_path), "%s/frontend/index.html", prog_dir);
     
     char css_path[PATH_MAX];
-    snprintf(css_path, sizeof(css_path), "%s/framework/css/gtk_theme.css", prog_dir);
+    snprintf(css_path, sizeof(css_path), "%s/barista/css/gtk_theme.css", prog_dir);
 
-    GtkWidget *window = create_window("Mocha Settings", html_path, css_path, 1000, 700, on_js_message);
+    bridge_register_action("get_config", handle_get_config);
+    bridge_register_action("read_file", handle_read_file);
+    bridge_register_action("write_file", handle_write_file);
+
+    GtkWidget *window = create_window("Mocha Settings", html_path, css_path, 1000, 700);
     g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
     gtk_widget_show_all(window);
     gtk_main();

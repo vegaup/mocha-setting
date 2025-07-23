@@ -1,0 +1,61 @@
+headerbar,
+window.titlebar,
+.titlebar {
+    background-image: none;
+    background-color: #1e1f23;
+    border-bottom: 1px solid #383838;
+    box-shadow: none;
+}
+
+headerbar .title,
+window.titlebar .title,
+.titlebar .title {
+    color: #bd93f9;
+    font-weight: bold;
+    text-shadow: 0 0 8px rgba(189, 147, 249, 0.5);
+}
+
+headerbar eventbox {
+    padding: 0;
+    min-height: 24px;
+    min-width: 24px;
+    border-radius: 12px;
+    margin: 0 8px;
+    background-color: #383838;
+    transition: all 0.2s;
+}
+
+headerbar #minimize-btn,
+headerbar #maximize-btn {
+    box-shadow: 0 0 8px rgba(189, 147, 249, 0.2);
+}
+
+headerbar #close-btn {
+    box-shadow: 0 0 8px rgba(255, 77, 77, 0.2);
+}
+
+headerbar eventbox:hover {
+    color: #1a1b1f;
+}
+
+headerbar #minimize-btn:hover,
+headerbar #maximize-btn:hover {
+    background-color: #bd93f9;
+    box-shadow: 0 0 14px rgba(189, 147, 249, 0.6);
+}
+
+headerbar #close-btn:hover {
+    background-color: #ff4d4d;
+    box-shadow: 0 0 14px rgba(255, 77, 77, 0.6);
+}
+
+headerbar eventbox label {
+    font-size: 16px;
+    font-weight: normal;
+    color: #1e1f23;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    text-shadow: none;
+}

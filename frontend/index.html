@@ -11,6 +11,7 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/addon/mode/simple.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/shell/shell.min.js"></script>
+    <script src="js/barista.js"></script>
     <style>
         .settings-root {
             display: flex;
@@ -407,13 +408,12 @@
             let currentConfig = {};
             let dirty = {};
             let lastCategory = 'general';
-            const bridge = window.webkit.messageHandlers.mochaBridge;
-
+            
             function init() {
                 setupSidebar();
                 initCodeMirror();
                 setupEventListeners();
-                bridge.postMessage(JSON.stringify({ action: "get_config" }));
+                Barista.send("get_config");
             }
             function setupSidebar() {
                 const sidebarNav = document.getElementById('sidebar-nav');
@@ -506,7 +506,7 @@
                 lastCategory = catId;
             }
             function applyChanges(category) {
-                bridge.postMessage(JSON.stringify({ action: "save", data: currentConfig }));
+                Barista.send("save", { data: currentConfig });
                 originalConfig = JSON.parse(JSON.stringify(currentConfig));
                 dirty[category] = false;
                 updateUIForCategory(category, true);
@@ -578,11 +578,11 @@
                 loadKeybinds(currentConfig);
                 checkDirtyState('keybinds');
             }
-            function loadFileInEditor(filename) { bridge.postMessage(JSON.stringify({ action: "read_file", file: filename })); }
+            function loadFileInEditor(filename) { Barista.send("read_file", { file: filename }); }
             function saveEditorContent() {
                 const filename = document.getElementById('file-selector').value;
                 const content = getEditorContent();
-                bridge.postMessage(JSON.stringify({ action: "write_file", file: filename, content }));
+                Barista.send("write_file", { file: filename, content });
                 ToastManager.show({ message: `Saved ${filename}`, type: 'info' });
             }
             window.setConfigFromNative = (config) => {
