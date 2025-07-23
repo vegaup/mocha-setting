@@ -11,18 +11,9 @@
 #include "../third_party/cJSON.h"
 #include <pwd.h>
 #include <glib.h>
+#include "../framework/include/framework.h"
 
 static struct Config config;
-
-static void on_maximize_toggle(GtkButton* button, gpointer user_data) {
-    (void)button;
-    GtkWindow *window = GTK_WINDOW(user_data);
-    if (gtk_window_is_maximized(window)) {
-        gtk_window_unmaximize(window);
-    } else {
-        gtk_window_maximize(window);
-    }
-}
 
 static char *get_config_path() {
     const char *home = getenv("HOME");
@@ -165,73 +156,12 @@ int main(int argc, char *argv[]) {
 
     char html_path[PATH_MAX];
     snprintf(html_path, sizeof(html_path), "%s/frontend/index.html", prog_dir);
-
-    char uri[PATH_MAX + 16];
-    snprintf(uri, sizeof(uri), "file://%s", html_path);
-
-    WebKitUserContentManager *manager = webkit_user_content_manager_new();
-    webkit_user_content_manager_register_script_message_handler(manager, "mochaBridge");
-    GtkWidget *window = gtk_window_new(GTK_WINDOW_TOPLEVEL);
-    gtk_window_set_default_size(GTK_WINDOW(window), 1000, 700);
-
-    GtkHeaderBar *header_bar = GTK_HEADER_BAR(gtk_header_bar_new());
-    gtk_header_bar_set_show_close_button(header_bar, FALSE);
-    gtk_header_bar_set_title(header_bar, "Mocha Settings");
-    gtk_widget_show(GTK_WIDGET(header_bar));
-    gtk_window_set_titlebar(GTK_WINDOW(window), GTK_WIDGET(header_bar));
-
-    GtkWidget *close_btn = gtk_button_new_from_icon_name("window-close-symbolic", GTK_ICON_SIZE_BUTTON);
-    g_signal_connect_swapped(close_btn, "clicked", G_CALLBACK(gtk_widget_destroy), window);
-    gtk_header_bar_pack_end(header_bar, close_btn);
-
-    GtkWidget *maximize_btn = gtk_button_new_from_icon_name("window-maximize-symbolic", GTK_ICON_SIZE_BUTTON);
-    g_signal_connect(maximize_btn, "clicked", G_CALLBACK(on_maximize_toggle), window);
-    gtk_header_bar_pack_end(header_bar, maximize_btn);
-
-    GtkWidget *minimize_btn = gtk_button_new_from_icon_name("window-minimize-symbolic", GTK_ICON_SIZE_BUTTON);
-    g_signal_connect_swapped(minimize_btn, "clicked", G_CALLBACK(gtk_window_iconify), window);
-    gtk_header_bar_pack_end(header_bar, minimize_btn);
-
-    const char *css =
-        "headerbar, window.titlebar, .titlebar {"
-        "   background-image: none;"
-        "   background-color: #1e1f23;"
-        "   border-bottom: 1px solid #383838;"
-        "   box-shadow: none;"
-        "}"
-        "headerbar .title, window.titlebar .title, .titlebar .title {"
-        "   color: #bd93f9;"
-        "   font-weight: bold;"
-        "   text-shadow: 0 0 8px rgba(189, 147, 249, 0.5);"
-        "}"
-        "headerbar button, window.titlebar button, .titlebar button {"
-        "   background-image: none;"
-        "   background-color: transparent;"
-        "   border: none;"
-        "   box-shadow: none;"
-        "   color: #e0e0e0;"
-        "   min-height: 24px;"
-        "   min-width: 24px;"
-        "}"
-        "headerbar button:hover, window.titlebar button:hover, .titlebar button:hover {"
-        "   background-color: rgba(189, 147, 249, 0.2);"
-        "   color: #bd93f9;"
-        "}";
-
-    GtkCssProvider *provider = gtk_css_provider_new();
-    gtk_css_provider_load_from_data(provider, css, -1, NULL);
-    GdkScreen *screen = gdk_screen_get_default();
-    gtk_style_context_add_provider_for_screen(screen, GTK_STYLE_PROVIDER(provider), GTK_STYLE_PROVIDER_PRIORITY_USER);
-
-    WebKitSettings *settings = webkit_settings_new();
-    webkit_settings_set_enable_developer_extras(settings, TRUE);
-    GtkWidget *webview = webkit_web_view_new_with_user_content_manager(manager);
-    webkit_web_view_set_settings(WEBKIT_WEB_VIEW(webview), settings);
     
-    gtk_container_add(GTK_CONTAINER(window), webview);
-    g_signal_connect(manager, "script-message-received::mochaBridge", G_CALLBACK(on_js_message), webview);
+    char css_path[PATH_MAX];
+    snprintf(css_path, sizeof(css_path), "%s/framework/css/gtk_theme.css", prog_dir);
+
+    GtkWidget *window = create_window("Mocha Settings", html_path, css_path, 1000, 700, on_js_message);
     g_signal_connect(window, "destroy", G_CALLBACK(gtk_main_quit), NULL);
-    webkit_web_view_load_uri(WEBKIT_WEB_VIEW(webview), uri);
     gtk_widget_show_all(window);
     gtk_main();
 

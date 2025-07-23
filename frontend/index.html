@@ -7,63 +7,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/theme/dracula.min.css">
+    <link rel="stylesheet" href="css/ui.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/addon/mode/simple.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/shell/shell.min.js"></script>
     <style>
-        :root {
-            --accent: #bd93f9;
-            --border: #383838;
-            --focus: #bd93f9;
-            --panel: #202124;
-            --foreground: #e0e0e0;
-            --background: #1a1b1f;
-            --danger: #ff4d4d;
-            --sidebar-width: 240px;
-            --sidebar-bg: #1e1f23;
-            --glow-color: rgba(189, 147, 249, 0.5);
-            --glow-color-danger: rgba(255, 77, 77, 0.5);
-        }
-
-        @media (prefers-color-scheme: light) {
-            :root {
-                --panel: #f8f8f2;
-                --foreground: #282a36;
-                --background: #fdfdfd;
-                --border: #cccccc;
-                --focus: #6272a4;
-                --accent: #ff79c6;
-                --sidebar-bg: #eaeaea;
-                --glow-color: rgba(255, 121, 198, 0.45);
-                --glow-color-danger: rgba(255, 77, 77, 0.45);
-            }
-        }
-
-        html,
-        body {
-            height: 100%;
-            margin: 0;
-            padding: 0;
-            font-synthesis: none;
-            text-rendering: optimizeLegibility;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-            user-select: none;
-            -webkit-user-select: none;
-            overflow: hidden;
-        }
-
-        body {
-            background: var(--background);
-            color: var(--foreground);
-            font-family: 'Segoe UI', 'Arial', sans-serif;
-            overflow: hidden;
-            filter: saturate(1.1);
-            display: flex;
-            flex-direction: column;
-            height: 100vh;
-        }
-
         .settings-root {
             display: flex;
             height: 100vh;
@@ -221,32 +169,6 @@
             font-weight: 500;
         }
 
-        input[type="color"] {
-            border: none;
-            width: 2.5em;
-            height: 2.5em;
-            background: none;
-            border-radius: 8px;
-            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.10);
-        }
-
-        input[type="text"] {
-            padding: 0.5em;
-            border-radius: 6px;
-            border: 1px solid var(--border);
-            background: var(--background);
-            color: var(--foreground);
-            width: 220px;
-            font-size: 1em;
-            transition: all 0.2s;
-        }
-
-        input[type="text"]:focus {
-            border-color: var(--focus);
-            box-shadow: 0 0 12px var(--glow-color);
-            outline: none;
-        }
-
         .unsaved {
             border: 2px solid var(--danger) !important;
             background: #ff555522 !important;
@@ -265,95 +187,6 @@
             background: linear-gradient(to top, var(--panel) 90%, transparent 100%);
             border-top: 1.5px solid var(--border);
             z-index: 2;
-        }
-
-        .action-btn {
-            background: var(--panel);
-            color: var(--foreground);
-            border: 1px solid var(--border);
-            border-radius: 8px;
-            padding: 0.6em 1.5em;
-            font-weight: 600;
-            font-size: 1.1em;
-            cursor: pointer;
-            transition: all 0.2s;
-            outline: none;
-        }
-
-        .action-btn:hover:not(:disabled) {
-            border-color: var(--accent);
-            box-shadow: 0 0 12px var(--glow-color);
-        }
-
-        .action-btn.primary {
-            background: var(--accent);
-            color: var(--background);
-            border-color: var(--accent);
-        }
-
-        .action-btn.primary:hover:not(:disabled) {
-            box-shadow: 0 0 16px var(--glow-color);
-            filter: brightness(1.1);
-        }
-
-        .action-btn:disabled {
-            background: var(--border);
-            color: #aaa;
-            cursor: not-allowed;
-        }
-
-        .action-btn.discard {
-            background: var(--danger);
-            border-color: var(--danger);
-            color: #fff;
-        }
-
-        .action-btn.discard:hover:not(:disabled) {
-            box-shadow: 0 0 16px var(--glow-color-danger);
-            filter: brightness(1.1);
-        }
-
-        #toast-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            z-index: 1000;
-        }
-
-        .toast {
-            padding: 1em 1.5em;
-            border-radius: 8px;
-            color: #fff;
-            font-weight: 600;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            opacity: 0;
-            transform: translateX(100%);
-            animation: slideInFromRight 0.5s forwards;
-        }
-
-        .toast.info {
-            background: var(--focus);
-        }
-
-        .toast.warning {
-            background: var(--danger);
-        }
-
-        @keyframes slideInFromRight {
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
-        }
-
-        @keyframes slideOutToRight {
-            to {
-                opacity: 0;
-                transform: translateX(100%);
-            }
         }
 
         .CodeMirror {
@@ -376,68 +209,6 @@
             border: 1px solid var(--border);
             background: var(--background);
             color: var(--foreground);
-        }
-
-        .checkbox-container {
-            display: inline-block;
-            position: relative;
-            width: 22px;
-            height: 22px;
-            cursor: pointer;
-            -webkit-user-select: none;
-            -moz-user-select: none;
-            -ms-user-select: none;
-            user-select: none;
-        }
-
-        .checkbox-container input {
-            position: absolute;
-            opacity: 0;
-            cursor: pointer;
-            height: 0;
-            width: 0;
-        }
-
-        .checkmark {
-            box-sizing: border-box;
-            position: absolute;
-            top: 0;
-            left: 0;
-            height: 22px;
-            width: 22px;
-            background-color: transparent;
-            border: 2px solid var(--border);
-            border-radius: 50%;
-            transition: all 0.2s ease-in-out;
-        }
-
-        .checkbox-container:hover input~.checkmark {
-            border-color: var(--accent);
-        }
-
-        .checkbox-container input:checked~.checkmark {
-            background-color: var(--accent);
-            border-color: var(--accent);
-            box-shadow: 0 0 12px var(--glow-color);
-        }
-
-        .checkmark:after {
-            content: "";
-            position: absolute;
-            display: none;
-        }
-
-        .checkbox-container input:checked~.checkmark:after {
-            display: block;
-        }
-
-        .checkbox-container .checkmark:after {
-            left: 5px;
-            top: 5px;
-            width: 8px;
-            height: 8px;
-            border-radius: 50%;
-            background: var(--background);
         }
 
         #keybinds-list {
@@ -487,12 +258,6 @@
 
         .sidebar-header #mocha-logo svg {
             filter: drop-shadow(0 0 6px var(--glow-color));
-        }
-
-        input[type="text"],
-        .CodeMirror {
-            user-select: text;
-            -webkit-user-select: text;
         }
     </style>
 </head>
@@ -584,6 +349,7 @@
     </div>
     <div id="toast-container"></div>
     <script>
+        // --- Managers (self-contained, no dependencies) ---
         const ToastManager = {
             show({ message, type = 'info', duration = 3000 }) {
                 const container = document.getElementById('toast-container');
@@ -637,7 +403,10 @@
                 { id: 'keybinds', label: 'Keybinds', icon: 'keybinds' },
                 { id: 'advanced', label: 'Advanced', icon: 'advanced' }
             ];
-            let originalConfig = {}; let currentConfig = {}; let dirty = {}; let lastCategory = 'general';
+            let originalConfig = {};
+            let currentConfig = {};
+            let dirty = {};
+            let lastCategory = 'general';
             const bridge = window.webkit.messageHandlers.mochaBridge;
 
             function init() {
