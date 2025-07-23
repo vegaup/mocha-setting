@@ -1,5 +1,5 @@
 #include "bridge.h"
-#include "../../third_party/cJSON.h"
+#include "../lib/cJSON.h"
 
 static GHashTable *action_handlers = NULL;
 
