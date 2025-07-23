@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Mocha Settings</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/theme/dracula.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/codemirror.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/addon/mode/simple.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.5/mode/shell/shell.min.js"></script>
+    <style>
+        :root {
+            --accent: #bd93f9;
+            --border: #383838;
+            --focus: #bd93f9;
+            --panel: #202124;
+            --foreground: #e0e0e0;
+            --background: #1a1b1f;
+            --danger: #ff4d4d;
+            --sidebar-width: 240px;
+            --sidebar-bg: #1e1f23;
+            --glow-color: rgba(189, 147, 249, 0.5);
+            --glow-color-danger: rgba(255, 77, 77, 0.5);
+        }
+
+        @media (prefers-color-scheme: light) {
+            :root {
+                --panel: #f8f8f2;
+                --foreground: #282a36;
+                --background: #fdfdfd;
+                --border: #cccccc;
+                --focus: #6272a4;
+                --accent: #ff79c6;
+                --sidebar-bg: #eaeaea;
+                --glow-color: rgba(255, 121, 198, 0.45);
+                --glow-color-danger: rgba(255, 77, 77, 0.45);
+            }
+        }
+
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+            padding: 0;
+            font-synthesis: none;
+            text-rendering: optimizeLegibility;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            user-select: none;
+            -webkit-user-select: none;
+            overflow: hidden;
+        }
+
+        body {
+            background: var(--background);
+            color: var(--foreground);
+            font-family: 'Segoe UI', 'Arial', sans-serif;
+            overflow: hidden;
+            filter: saturate(1.1);
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .settings-root {
+            display: flex;
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: var(--sidebar-width);
+            background: var(--sidebar-bg);
+            border-right: 2px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            padding: 0.5rem 0;
+            gap: 0.5rem;
+        }
+
+        .sidebar-header {
+            font-size: 1.7rem;
+            font-weight: bold;
+            color: var(--accent);
+            letter-spacing: 1px;
+            margin: 1.5rem 0 2.5rem 2.2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.7em;
+            text-shadow: 0 0 12px var(--glow-color);
+        }
+
+        .sidebar-nav {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2em;
+            flex: 1;
+        }
+
+        .sidebar-btn {
+            display: flex;
+            align-items: center;
+            gap: 1em;
+            background: none;
+            border: none;
+            color: var(--foreground);
+            font-size: 1.1em;
+            padding: 0.9em 2em 0.9em 2.2em;
+            border-radius: 0 18px 18px 0;
+            cursor: pointer;
+            transition: background 0.18s, color 0.18s;
+            outline: none;
+            position: relative;
+        }
+
+        .sidebar-btn.active,
+        .sidebar-btn:focus {
+            background: var(--focus);
+            color: var(--background);
+            text-shadow: 0 0 8px var(--glow-color);
+        }
+
+        .sidebar-btn svg {
+            width: 1.5em;
+            height: 1.5em;
+            display: block;
+            flex-shrink: 0;
+        }
+
+        .content-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            padding: 0;
+            position: relative;
+            background: var(--panel);
+        }
+
+        .category-section {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+            padding: 2.5rem 3.5rem 5.5rem 3.5rem;
+            overflow-y: auto;
+            animation: fadein 0.3s;
+        }
+
+        .category-section.active {
+            display: flex;
+        }
+
+        @keyframes fadein {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: none;
+            }
+        }
+
+        .category-section.shake {
+            animation: shake 0.4s;
+        }
+
+        @keyframes shake {
+
+            10%,
+            90% {
+                transform: translateX(-2px);
+            }
+
+            20%,
+            80% {
+                transform: translateX(4px);
+            }
+
+            30%,
+            50%,
+            70% {
+                transform: translateX(-8px);
+            }
+
+            40%,
+            60% {
+                transform: translateX(8px);
+            }
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            color: var(--accent);
+            margin-bottom: 1.5rem;
+            font-weight: 600;
+            text-shadow: 0 0 12px var(--glow-color);
+        }
+
+        .form-group {
+            margin-bottom: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.7em;
+            max-width: 500px;
+        }
+
+        .form-row {
+            display: flex;
+            align-items: center;
+            gap: 1.2em;
+        }
+
+        label {
+            min-width: 120px;
+            font-weight: 500;
+        }
+
+        input[type="color"] {
+            border: none;
+            width: 2.5em;
+            height: 2.5em;
+            background: none;
+            border-radius: 8px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.10);
+        }
+
+        input[type="text"] {
+            padding: 0.5em;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--background);
+            color: var(--foreground);
+            width: 220px;
+            font-size: 1em;
+            transition: all 0.2s;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--focus);
+            box-shadow: 0 0 12px var(--glow-color);
+            outline: none;
+        }
+
+        .unsaved {
+            border: 2px solid var(--danger) !important;
+            background: #ff555522 !important;
+            transition: border 0.2s, background 0.2s;
+        }
+
+        .action-bar {
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 1em;
+            padding: 1.2em 2.5em;
+            background: linear-gradient(to top, var(--panel) 90%, transparent 100%);
+            border-top: 1.5px solid var(--border);
+            z-index: 2;
+        }
+
+        .action-btn {
+            background: var(--panel);
+            color: var(--foreground);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.6em 1.5em;
+            font-weight: 600;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: all 0.2s;
+            outline: none;
+        }
+
+        .action-btn:hover:not(:disabled) {
+            border-color: var(--accent);
+            box-shadow: 0 0 12px var(--glow-color);
+        }
+
+        .action-btn.primary {
+            background: var(--accent);
+            color: var(--background);
+            border-color: var(--accent);
+        }
+
+        .action-btn.primary:hover:not(:disabled) {
+            box-shadow: 0 0 16px var(--glow-color);
+            filter: brightness(1.1);
+        }
+
+        .action-btn:disabled {
+            background: var(--border);
+            color: #aaa;
+            cursor: not-allowed;
+        }
+
+        .action-btn.discard {
+            background: var(--danger);
+            border-color: var(--danger);
+            color: #fff;
+        }
+
+        .action-btn.discard:hover:not(:disabled) {
+            box-shadow: 0 0 16px var(--glow-color-danger);
+            filter: brightness(1.1);
+        }
+
+        #toast-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 1000;
+        }
+
+        .toast {
+            padding: 1em 1.5em;
+            border-radius: 8px;
+            color: #fff;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            opacity: 0;
+            transform: translateX(100%);
+            animation: slideInFromRight 0.5s forwards;
+        }
+
+        .toast.info {
+            background: var(--focus);
+        }
+
+        .toast.warning {
+            background: var(--danger);
+        }
+
+        @keyframes slideInFromRight {
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        @keyframes slideOutToRight {
+            to {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+        }
+
+        .CodeMirror {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            height: auto;
+            font-family: 'Fira Code', 'Courier New', monospace;
+        }
+
+        #editor-controls {
+            margin-bottom: 1em;
+            display: flex;
+            gap: 1em;
+            align-items: center;
+        }
+
+        #file-selector {
+            padding: 0.5em;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: var(--background);
+            color: var(--foreground);
+        }
+
+        .checkbox-container {
+            display: inline-block;
+            position: relative;
+            width: 22px;
+            height: 22px;
+            cursor: pointer;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+
+        .checkbox-container input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 0;
+            width: 0;
+        }
+
+        .checkmark {
+            box-sizing: border-box;
+            position: absolute;
+            top: 0;
+            left: 0;
+            height: 22px;
+            width: 22px;
+            background-color: transparent;
+            border: 2px solid var(--border);
+            border-radius: 50%;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .checkbox-container:hover input~.checkmark {
+            border-color: var(--accent);
+        }
+
+        .checkbox-container input:checked~.checkmark {
+            background-color: var(--accent);
+            border-color: var(--accent);
+            box-shadow: 0 0 12px var(--glow-color);
+        }
+
+        .checkmark:after {
+            content: "";
+            position: absolute;
+            display: none;
+        }
+
+        .checkbox-container input:checked~.checkmark:after {
+            display: block;
+        }
+
+        .checkbox-container .checkmark:after {
+            left: 5px;
+            top: 5px;
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--background);
+        }
+
+        #keybinds-list {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8em;
+            max-width: 500px;
+        }
+
+        .keybind-item {
+            display: flex;
+            align-items: center;
+            background: var(--background);
+            padding: 0.8em 1.2em;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .keybind-key-name {
+            font-weight: 600;
+            color: var(--accent);
+            flex-basis: 40%;
+        }
+
+        .keybind-action-name {
+            flex: 1;
+        }
+
+        .remove-keybind-btn {
+            background: none;
+            border: none;
+            color: var(--danger);
+            font-size: 1.5em;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 0 0.5em;
+            line-height: 1;
+            transition: all 0.2s;
+        }
+
+        .remove-keybind-btn:hover {
+            transform: scale(1.1);
+            text-shadow: 0 0 8px var(--glow-color-danger);
+        }
+
+        .sidebar-header #mocha-logo svg {
+            filter: drop-shadow(0 0 6px var(--glow-color));
+        }
+
+        input[type="text"],
+        .CodeMirror {
+            user-select: text;
+            -webkit-user-select: text;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="settings-root">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <span id="mocha-logo"></span> { Mocha }
+            </div>
+            <nav class="sidebar-nav" id="sidebar-nav"></nav>
+        </aside>
+        <main class="content-area" id="content-area">
+            <section class="category-section" id="cat-general">
+                <div class="section-title">General</div>
+                <div class="form-group">
+                    <div class="form-row">
+                        <label for="tiling-toggle">Tiling</label>
+                        <label class="checkbox-container">
+                            <input type="checkbox" id="tiling-toggle">
+                            <span class="checkmark"></span>
+                        </label>
+                    </div>
+                    <div class="form-row">
+                        <label for="quotes-toggle">Quotes</label>
+                        <label class="checkbox-container">
+                            <input type="checkbox" id="quotes-toggle">
+                            <span class="checkmark"></span>
+                        </label>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="form-row"><label for="launcher-cmd">Launcher Command</label><input type="text"
+                            id="launcher-cmd" placeholder="rofi -show drun"></div>
+                </div>
+                <div class="form-group">
+                    <div class="form-row"><label for="exec-once-input">Exec Once</label><input type="text"
+                            id="exec-once-input" placeholder="Add command..."><button id="add-exec-once"
+                            class="action-btn primary">Add</button></div>
+                    <ul id="exec-once-list"></ul>
+                </div>
+                <div class="action-bar"><button class="action-btn discard" id="discard-general" style="display:none;"
+                        disabled>Discard</button><button class="action-btn primary" id="apply-general"
+                        disabled>Apply</button></div>
+            </section>
+            <section class="category-section" id="cat-appearance">
+                <div class="section-title">Appearance</div>
+                <div class="form-group">
+                    <div class="form-row"><label for="border-color">Border</label><input type="color" id="border-color">
+                    </div>
+                    <div class="form-row"><label for="focus-color">Focus</label><input type="color" id="focus-color">
+                    </div>
+                    <div class="form-row"><label for="panel-color">Panel</label><input type="color" id="panel-color">
+                    </div>
+                    <div class="form-row"><label for="accent-color">Accent</label><input type="color" id="accent-color">
+                    </div>
+                </div>
+                <div class="action-bar"><button class="action-btn discard" id="discard-appearance" style="display:none;"
+                        disabled>Discard</button><button class="action-btn primary" id="apply-appearance"
+                        disabled>Apply</button></div>
+            </section>
+            <section class="category-section" id="cat-keybinds">
+                <div class="section-title">Keybinds</div>
+                <div class="form-group">
+                    <div class="form-row"><input type="text" id="keybind-key"
+                            placeholder="Key (e.g. Super+Enter)"><input type="text" id="keybind-action"
+                            placeholder="Action (e.g. open-terminal)"><button id="add-keybind"
+                            class="action-btn primary">Add</button></div>
+                    <ul id="keybinds-list"></ul>
+                </div>
+                <div class="action-bar"><button class="action-btn discard" id="discard-keybinds" style="display:none;"
+                        disabled>Discard</button><button class="action-btn primary" id="apply-keybinds"
+                        disabled>Apply</button></div>
+            </section>
+            <section class="category-section" id="cat-advanced">
+                <div class="section-title">Advanced Config Editor</div>
+                <div id="editor-controls"><label for="file-selector">Edit File:</label><select id="file-selector">
+                        <option value="features.mconf">features.mconf</option>
+                        <option value="theme.mconf">theme.mconf</option>
+                        <option value="keybinds.mconf">keybinds.mconf</option>
+                        <option value="config.mconf">config.mconf</option>
+                    </select><button id="save-editor-content" class="action-btn primary">Save Content</button></div>
+                <textarea id="code-editor"></textarea>
+                <div class="action-bar">
+                    <p>Changes made here are saved directly and do not use Apply/Discard.</p>
+                </div>
+            </section>
+        </main>
+    </div>
+    <div id="toast-container"></div>
+    <script>
+        const ToastManager = {
+            show({ message, type = 'info', duration = 3000 }) {
+                const container = document.getElementById('toast-container');
+                if (!container) return;
+                const toast = document.createElement('div');
+                toast.className = `toast ${type}`;
+                toast.textContent = message;
+                container.appendChild(toast);
+                setTimeout(() => {
+                    toast.style.animation = 'slideOutToRight 0.5s forwards';
+                    toast.addEventListener('animationend', () => toast.remove());
+                }, duration);
+            }
+        };
+        const SVGManager = {
+            icons: {
+                general: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10M12 10V4M8 12H4M20 12H16M8 4L4 8M20 16L16 20M8 20L4 16M20 8L16 4"/></svg>`,
+                appearance: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.32 0L12 2.69z"/><path d="M12 22V12"/></svg>`,
+                keybinds: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M6 11h.01M10 11h.01M14 11h.01M18 11h.01M6 15h.01M10 15h.01M14 15h.01M18 15h.01"/></svg>`,
+                advanced: `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"/><line x1="12" y1="19" x2="20" y2="19"/></svg>`
+            },
+            get(name) { return this.icons[name] || ''; }
+        };
+        let editor;
+        function initCodeMirror() {
+            if (window.CodeMirror) {
+                if (CodeMirror.defineSimpleMode) {
+                    CodeMirror.defineSimpleMode("mconf", {
+                        start: [
+                            { regex: /#.*/, token: "comment" },
+                            { regex: /"(?:[^\\]|\\.)*?"/, token: "string" },
+                            { regex: /[\w\.-]+(?=\s*\{)/, token: "tag" },
+                            { regex: /(?:true|false)\b/, token: "atom" },
+                            { regex: /0x[a-f\d]+|[-+]?(?:\.\d+|\d+\.?\d*)(?:e[-+]?\d+)?/i, token: "number" },
+                            { regex: /[\w\.-]+(?=\s*=)/, token: "keyword" },
+                        ]
+                    });
+                }
+                editor = CodeMirror.fromTextArea(document.getElementById('code-editor'), {
+                    lineNumbers: true, theme: 'dracula', mode: 'mconf', value: 'Select a file to begin...'
+                });
+            }
+        }
+        function setEditorContent(content) { if (editor) { editor.setValue(content || ''); editor.refresh(); } }
+        function getEditorContent() { return editor ? editor.getValue() : ''; }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const categories = [
+                { id: 'general', label: 'General', icon: 'general' },
+                { id: 'appearance', label: 'Appearance', icon: 'appearance' },
+                { id: 'keybinds', label: 'Keybinds', icon: 'keybinds' },
+                { id: 'advanced', label: 'Advanced', icon: 'advanced' }
+            ];
+            let originalConfig = {}; let currentConfig = {}; let dirty = {}; let lastCategory = 'general';
+            const bridge = window.webkit.messageHandlers.mochaBridge;
+
+            function init() {
+                setupSidebar();
+                initCodeMirror();
+                setupEventListeners();
+                bridge.postMessage(JSON.stringify({ action: "get_config" }));
+            }
+            function setupSidebar() {
+                const sidebarNav = document.getElementById('sidebar-nav');
+                document.getElementById('mocha-logo').innerHTML = SVGManager.get('general');
+                categories.forEach(cat => {
+                    const btn = document.createElement('button');
+                    btn.className = 'sidebar-btn';
+                    btn.dataset.cat = cat.id;
+                    btn.innerHTML = `${SVGManager.get(cat.icon)}<span>${cat.label}</span>`;
+                    sidebarNav.appendChild(btn);
+                });
+            }
+            function setupEventListeners() {
+                document.getElementById('sidebar-nav').addEventListener('click', e => {
+                    const catBtn = e.target.closest('.sidebar-btn');
+                    if (catBtn) switchCategory(catBtn.dataset.cat);
+                });
+                categories.forEach(({ id }) => {
+                    const applyBtn = document.getElementById(`apply-${id}`);
+                    const discardBtn = document.getElementById(`discard-${id}`);
+                    if (applyBtn) applyBtn.onclick = () => applyChanges(id);
+                    if (discardBtn) discardBtn.onclick = () => discardChanges(id);
+                });
+                document.getElementById('tiling-toggle').onchange = (e) => updateField('tiling', e.target.checked, 'general');
+                document.getElementById('quotes-toggle').onchange = (e) => updateField('quotes', e.target.checked, 'general');
+                document.getElementById('launcher-cmd').oninput = (e) => updateField('launcher_cmd', e.target.value, 'general');
+                ['border', 'focus', 'panel', 'accent'].forEach(color => {
+                    document.getElementById(`${color}-color`).oninput = (e) => updateColor(color, e.target.value);
+                });
+                document.getElementById('file-selector').onchange = (e) => loadFileInEditor(e.target.value);
+                document.getElementById('save-editor-content').onclick = saveEditorContent;
+                document.getElementById('add-keybind').onclick = addKeybind;
+                document.getElementById('keybinds-list').addEventListener('click', (e) => {
+                    if (e.target.classList.contains('remove-keybind-btn')) {
+                        const keyToRemove = e.target.parentElement.dataset.key;
+                        removeKeybind(keyToRemove);
+                    }
+                });
+            }
+            function highlightUnsaved(category, add) {
+                const inputs = document.querySelectorAll(`#cat-${category} input, #cat-${category} select`);
+                inputs.forEach(input => {
+                    if (add) input.classList.add('unsaved');
+                    else input.classList.remove('unsaved');
+                });
+            }
+            function updateField(key, value, category) { currentConfig[key] = value; checkDirtyState(category); }
+            function updateColor(color, value) { if (!currentConfig.colors) currentConfig.colors = {}; currentConfig.colors[color] = value; checkDirtyState('appearance'); }
+
+            function checkDirtyState(category) {
+                let isNowDirty = false;
+                switch (category) {
+                    case 'general':
+                        isNowDirty = originalConfig.tiling !== currentConfig.tiling ||
+                            originalConfig.quotes !== currentConfig.quotes ||
+                            originalConfig.launcher_cmd !== currentConfig.launcher_cmd;
+                        break;
+                    case 'appearance':
+                        isNowDirty = JSON.stringify(originalConfig.colors) !== JSON.stringify(currentConfig.colors);
+                        break;
+                    case 'keybinds':
+                        isNowDirty = JSON.stringify(originalConfig.keybinds) !== JSON.stringify(currentConfig.keybinds);
+                        break;
+                }
+                dirty[category] = isNowDirty;
+                updateUIForCategory(category);
+            }
+
+            function updateUIForCategory(category, clearHighlights = false) {
+                const isDirty = dirty[category];
+                if (document.getElementById(`apply-${category}`)) {
+                    document.getElementById(`apply-${category}`).disabled = !isDirty;
+                    document.getElementById(`discard-${category}`).style.display = isDirty ? 'inline-block' : 'none';
+                }
+                if (clearHighlights) { highlightUnsaved(category, false); }
+            }
+            function switchCategory(catId) {
+                if (dirty[lastCategory]) {
+                    document.getElementById(`cat-${lastCategory}`).classList.add('shake');
+                    highlightUnsaved(lastCategory, true);
+                    ToastManager.show({ message: 'Save or discard changes before switching', type: 'warning' });
+                    setTimeout(() => document.getElementById(`cat-${lastCategory}`).classList.remove('shake'), 500);
+                    return;
+                }
+                highlightUnsaved(lastCategory, false);
+                document.querySelectorAll('.sidebar-btn').forEach(btn => btn.classList.remove('active'));
+                document.querySelector(`.sidebar-btn[data-cat='${catId}']`).classList.add('active');
+                document.querySelectorAll('.category-section').forEach(sec => sec.classList.remove('active'));
+                document.getElementById(`cat-${catId}`).classList.add('active');
+                lastCategory = catId;
+            }
+            function applyChanges(category) {
+                bridge.postMessage(JSON.stringify({ action: "save", data: currentConfig }));
+                originalConfig = JSON.parse(JSON.stringify(currentConfig));
+                dirty[category] = false;
+                updateUIForCategory(category, true);
+                ToastManager.show({ message: 'Settings Applied!', type: 'info' });
+            }
+            function discardChanges(category) {
+                currentConfig = JSON.parse(JSON.stringify(originalConfig));
+                loadCategory(category, currentConfig);
+                dirty[category] = false;
+                updateUIForCategory(category, true);
+            }
+            function loadCategory(category, config) {
+                if (category === 'general') loadGeneral(config);
+                if (category === 'appearance') loadAppearance(config);
+                if (category === 'keybinds') loadKeybinds(config);
+            }
+            function loadGeneral(config) {
+                document.getElementById('tiling-toggle').checked = config.tiling;
+                document.getElementById('quotes-toggle').checked = config.quotes;
+                document.getElementById('launcher-cmd').value = config.launcher_cmd;
+            }
+            function loadAppearance(config) {
+                for (const color of ['border', 'focus', 'panel', 'accent']) {
+                    document.getElementById(`${color}-color`).value = config.colors[color];
+                }
+            }
+            function loadKeybinds(config) {
+                const list = document.getElementById('keybinds-list');
+                list.innerHTML = '';
+                if (config.keybinds && Array.isArray(config.keybinds)) {
+                    config.keybinds.forEach(kb => {
+                        const item = document.createElement('li');
+                        item.className = 'keybind-item';
+                        item.dataset.key = kb.key;
+                        item.innerHTML = `
+                            <span class="keybind-key-name">${kb.key}</span>
+                            <span class="keybind-action-name">${kb.action}</span>
+                            <button class="remove-keybind-btn">&times;</button>
+                        `;
+                        list.appendChild(item);
+                    });
+                }
+            }
+            function addKeybind() {
+                const keyInput = document.getElementById('keybind-key');
+                const actionInput = document.getElementById('keybind-action');
+                const newKey = keyInput.value.trim();
+                const newAction = actionInput.value.trim();
+                if (!newKey || !newAction) {
+                    ToastManager.show({ message: 'Key and action cannot be empty', type: 'warning' });
+                    return;
+                }
+                if (!currentConfig.keybinds) {
+                    currentConfig.keybinds = [];
+                }
+                if (currentConfig.keybinds.some(kb => kb.key === newKey)) {
+                    ToastManager.show({ message: `Keybind "${newKey}" already exists`, type: 'warning' });
+                    return;
+                }
+                currentConfig.keybinds.push({ key: newKey, action: newAction });
+                loadKeybinds(currentConfig);
+                checkDirtyState('keybinds');
+                keyInput.value = '';
+                actionInput.value = '';
+                keyInput.focus();
+            }
+            function removeKeybind(key) {
+                currentConfig.keybinds = currentConfig.keybinds.filter(kb => kb.key !== key);
+                loadKeybinds(currentConfig);
+                checkDirtyState('keybinds');
+            }
+            function loadFileInEditor(filename) { bridge.postMessage(JSON.stringify({ action: "read_file", file: filename })); }
+            function saveEditorContent() {
+                const filename = document.getElementById('file-selector').value;
+                const content = getEditorContent();
+                bridge.postMessage(JSON.stringify({ action: "write_file", file: filename, content }));
+                ToastManager.show({ message: `Saved ${filename}`, type: 'info' });
+            }
+            window.setConfigFromNative = (config) => {
+                const normalize = (c) => {
+                    c.keybinds = c.keybinds && Array.isArray(c.keybinds) ? c.keybinds : [];
+                    c.colors = c.colors || {};
+                    return c;
+                };
+                originalConfig = normalize(JSON.parse(JSON.stringify(config)));
+                currentConfig = normalize(JSON.parse(JSON.stringify(config)));
+                categories.forEach(cat => loadCategory(cat.id, config));
+                categories.forEach(cat => { dirty[cat.id] = false; updateUIForCategory(cat.id, true); });
+                switchCategory('general');
+            };
+            window.setEditorContent = setEditorContent;
+            init();
+        });
+    </script>
+</body>
+
+</html>

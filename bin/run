@@ -1,0 +1,6 @@
+#!/bin/bash
+
+set -e pipefail
+
+make
+./mocha-settings
